@@ -14,38 +14,42 @@ import AppInput from '../../components/AppInput';
 import AppButton from '../../components/AppButton';
 import { colors, spacing, typography } from '../../theme/colors';
 import { loginRequest } from '../../api/auth.api';
-import { saveToken } from '../../utils/storage';
+import { useAuth } from '../../context/AuthContext';
 import { AuthStackParamList } from '../../navigation/AuthStack';
 
 type NavProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const navigation = useNavigation<NavProp>();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
-    if (!username.trim() || !password.trim()) {
-      setError('Username and password are required.');
-      return;
-    }
+ const handleLogin = async () => {
+  console.log('LOGIN BUTTON PRESSED');
+  if (!username.trim() || !password.trim()) {
+    console.log('VALIDATION FAILED - empty fields');
+    setError('Username and password are required.');
+    return;
+  }
 
-    setError(null);
-    setLoading(true);
-    try {
-      const user = await loginRequest({ username: username.trim(), password });
-      await saveToken(user.accessToken);
-      // TODO: dispatch to authSlice once Redux store is wired up.
-      // RootNavigator will switch to AppStack once it sees a stored token.
-    } catch (err) {
-      setError('Invalid username or password.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setError(null);
+  setLoading(true);
+  try {
+    const user = await loginRequest({ username: username.trim(), password });
+    console.log('LOGIN SUCCESS, token:', user.accessToken);
+    await login(user.accessToken);
+    console.log('AUTH CONTEXT UPDATED');
+  } catch (err) {
+    console.log('LOGIN ERROR:', err);
+    setError('Invalid username or password.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <KeyboardAvoidingView
