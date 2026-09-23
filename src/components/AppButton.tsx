@@ -1,24 +1,32 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, ViewStyle } from 'react-native';
-import { colors, spacing, typography } from '../theme/colors';
-
+import { colors, typography, spacing } from '../theme/colors';
 
 type Props = {
   label: string;
   onPress: () => void;
   variant?: 'filled' | 'outline';
+  disabled?: boolean;
   style?: ViewStyle;
 };
 
-export default function AppButton({ label, onPress, variant = 'filled', style }: Props) {
+export default function AppButton({
+  label,
+  onPress,
+  variant = 'filled',
+  disabled = false,
+  style,
+}: Props) {
   const isFilled = variant === 'filled';
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.base,
         isFilled ? styles.filled : styles.outline,
         pressed && { opacity: 0.85 },
+        disabled && { opacity: 0.6 },
         style,
       ]}
     >
