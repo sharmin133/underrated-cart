@@ -28,28 +28,28 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
- const handleLogin = async () => {
-  console.log('LOGIN BUTTON PRESSED');
-  if (!username.trim() || !password.trim()) {
-    console.log('VALIDATION FAILED - empty fields');
-    setError('Username and password are required.');
-    return;
-  }
+  const handleLogin = async () => {
+    console.log('LOGIN BUTTON PRESSED');
+    if (!username.trim() || !password.trim()) {
+      console.log('VALIDATION FAILED - empty fields');
+      setError('Username and password are required.');
+      return;
+    }
 
-  setError(null);
-  setLoading(true);
-  try {
-    const user = await loginRequest({ username: username.trim(), password });
-    console.log('LOGIN SUCCESS, token:', user.accessToken);
-    await login(user.accessToken);
-    console.log('AUTH CONTEXT UPDATED');
-  } catch (err) {
-    console.log('LOGIN ERROR:', err);
-    setError('Invalid username or password.');
-  } finally {
-    setLoading(false);
-  }
-};
+    setError(null);
+    setLoading(true);
+    try {
+      const user = await loginRequest({ username: username.trim(), password });
+      console.log('LOGIN SUCCESS, token:', user.accessToken);
+      await login(user.accessToken, user.id);
+      console.log('AUTH CONTEXT UPDATED');
+    } catch (err) {
+      console.log('LOGIN ERROR:', err);
+      setError('Invalid username or password.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView

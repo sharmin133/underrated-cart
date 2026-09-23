@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import ProductCard from '../../components/ProductCard';
 import CategoryGrid from '../../components/CategoryGrid';
@@ -22,6 +24,8 @@ import {
   searchProducts,
 } from '../../api/products.api';
 import { Product } from '../../types/product';
+import { useFilter } from '../../context/FilterContext';
+import { HomeStackParamList } from '../../navigation/HomeStack';
 
 // Replace with the logged-in user's name/avatar once wired to auth state
 const MOCK_USER = {
@@ -29,11 +33,18 @@ const MOCK_USER = {
   avatar: require('../../../assets/avatar-placeholder.png'),
 };
 
+type NavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
+
 export default function HomeScreen() {
+  const navigation = useNavigation<NavProp>();
+  const { filterResult, clearFilter } = useFilter();
+  const filterAppliedRef = useRef(false);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [appliedFilterLabel, setAppliedFilterLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -44,7 +55,12 @@ export default function HomeScreen() {
         getAllProducts(20),
         getCategories(),
       ]);
-      setProducts(productList);
+      // Skip applying this result if a filter was applied while this
+      // request was still in flight — prevents it from overwriting
+      // the filtered list the user just asked for.
+      if (!filterAppliedRef.current) {
+        setProducts(productList);
+      }
       setCategories(categoryList);
       setErrorMsg(null);
     } catch (err) {
@@ -59,11 +75,24 @@ export default function HomeScreen() {
     loadInitial();
   }, [loadInitial]);
 
+  // Receive filtered results coming back from ProductFilterScreen (via context)
+  useEffect(() => {
+    if (filterResult) {
+      filterAppliedRef.current = true;
+      setProducts(filterResult.products);
+      setAppliedFilterLabel(filterResult.label);
+      setSearchQuery('');
+      setActiveCategory('All');
+    }
+  }, [filterResult]);
+
   // Debounced live search — takes priority over category selection while typing
   useEffect(() => {
     if (searchQuery.trim().length === 0) return;
 
     const timeout = setTimeout(async () => {
+      filterAppliedRef.current = false;
+      clearFilter();
       setLoading(true);
       try {
         const results = await searchProducts(searchQuery.trim());
@@ -80,7 +109,10 @@ export default function HomeScreen() {
   }, [searchQuery]);
 
   const handleSelectCategory = async (category: string) => {
+    filterAppliedRef.current = false;
+    clearFilter();
     setSearchQuery('');
+    setAppliedFilterLabel(null);
     setActiveCategory(category);
     setLoading(true);
     try {
@@ -96,13 +128,18 @@ export default function HomeScreen() {
   };
 
   const handleRefresh = () => {
+    filterAppliedRef.current = false;
+    clearFilter();
     setRefreshing(true);
     setSearchQuery('');
+    setAppliedFilterLabel(null);
     setActiveCategory('All');
     loadInitial();
   };
 
-  const listTitle = searchQuery.trim()
+  const listTitle = appliedFilterLabel
+    ? appliedFilterLabel
+    : searchQuery.trim()
     ? `Results for "${searchQuery.trim()}"`
     : activeCategory === 'All'
     ? 'Recommended'
@@ -148,7 +185,10 @@ export default function HomeScreen() {
                 )}
               </View>
 
-              <Pressable style={styles.filterButton}>
+              <Pressable
+                style={styles.filterButton}
+                onPress={() => navigation.navigate('ProductFilter')}
+              >
                 <Ionicons name="options-outline" size={16} color={colors.white} />
                 <Text style={styles.filterButtonText}>Filter</Text>
               </Pressable>
@@ -170,11 +210,27 @@ export default function HomeScreen() {
             {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
           </View>
         }
-        renderItem={({ item }) => <ProductCard product={item} onPress={() => {}} />}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            onPress={() => navigation.navigate('ProductDetails', { productId: item.id })}
+          />
+        )}
         ListEmptyComponent={
           loading ? (
             <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
-          ) : null
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="sad-outline" size={40} color={colors.textSecondary} />
+              <Text style={styles.emptyText}>
+                {appliedFilterLabel
+                  ? "No products match this filter. Try adjusting it."
+                  : searchQuery.trim()
+                  ? `No results found for "${searchQuery.trim()}"`
+                  : 'No products found.'}
+              </Text>
+            </View>
+          )
         }
       />
     </SafeAreaView>
@@ -269,5 +325,18 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 13,
     marginBottom: spacing.md,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.xxl,
+  },
+  emptyText: {
+    ...typography.subtitle,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from '../screens/Home/HomeScreen';
+import HomeStack from './HomeStack';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import { colors } from '../theme/colors';
 
@@ -25,7 +25,7 @@ export default function AppStack() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
