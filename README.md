@@ -1,6 +1,6 @@
 # Underrated Cart 
 
-A React Native (Expo) e-commerce application using DummyJSON as the mock backend.
+A React Native (Expo) e-commerce application built using the DummyJSON API for product and authentication data.
 
 
 ## Tech Stack
