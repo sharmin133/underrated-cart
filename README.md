@@ -1,6 +1,7 @@
-# Underrated Cart — React Native Technical Assessment
+# Underrated Cart 
 
-A React Native (Expo) e-commerce app built for the Full Stack Developer assessment at Versatilo Group, using [DummyJSON](https://dummyjson.com) as the mock backend.
+A React Native (Expo) e-commerce application using DummyJSON as the mock backend.
+
 
 ## Tech Stack
 
