@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, FlatList, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,7 @@ const ACCENT = '#D32F2F';
 const ACCENT_SOFT = '#FDECEA';
 
 export default function CartScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
   const { items, totalPrice, updateQuantity, removeFromCart } = useCart();
 
@@ -105,7 +106,12 @@ export default function CartScreen() {
       />
 
       {items.length > 0 && (
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: Math.max(insets.bottom, spacing.md) },
+          ]}
+        >
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -288,7 +294,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
     backgroundColor: colors.white,

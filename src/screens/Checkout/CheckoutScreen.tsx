@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +24,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function CheckoutScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
   const { items, totalPrice, clearCart } = useCart();
   const [selectedPayment, setSelectedPayment] = useState(PAYMENT_METHODS[0].id);
@@ -145,7 +146,12 @@ export default function CheckoutScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: Math.max(insets.bottom, spacing.md) },
+        ]}
+      >
         <AppButton
           label={`Order Now · $${total.toFixed(2)}`}
           onPress={handleOrderNow}
@@ -334,7 +340,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
