@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../theme/colors';
@@ -10,12 +10,32 @@ type Props = {
 };
 
 export default function ProductCard({ product, onPress }: Props) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleFavoritePress = (e: any) => {
+    e.stopPropagation();
+    setIsFavorite((prev) => !prev);
+  };
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.imageWrapper}>
-        <Image source={{ uri: product.thumbnail }} style={styles.image} resizeMode="cover" />
-        <Pressable style={styles.favoriteBtn} hitSlop={8}>
-          <Ionicons name="heart-outline" size={16} color={colors.textPrimary} />
+        <Image
+          source={{ uri: product.thumbnail }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+
+        <Pressable
+          style={styles.favoriteBtn}
+          hitSlop={8}
+          onPress={handleFavoritePress}
+        >
+          <Ionicons
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={16}
+            color={isFavorite ? colors.primary : colors.textPrimary}
+          />
         </Pressable>
       </View>
 
@@ -25,6 +45,7 @@ export default function ProductCard({ product, onPress }: Props) {
 
       <View style={styles.footerRow}>
         <Text style={styles.price}>${product.price}</Text>
+
         <View style={styles.ratingRow}>
           <Ionicons name="star" size={12} color={colors.primary} />
           <Text style={styles.rating}>{product.rating.toFixed(1)}</Text>
@@ -41,6 +62,7 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     marginBottom: spacing.md,
   },
+
   imageWrapper: {
     width: '100%',
     aspectRatio: 1,
@@ -49,10 +71,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: spacing.xs,
   },
+
   image: {
     width: '100%',
     height: '100%',
   },
+
   favoriteBtn: {
     position: 'absolute',
     top: 8,
@@ -64,27 +88,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   title: {
     ...typography.subtitle,
     fontSize: 13,
     color: colors.textPrimary,
     marginBottom: 2,
   },
+
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+
   price: {
     ...typography.button,
     fontSize: 14,
     color: colors.textPrimary,
   },
+
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
   },
+
   rating: {
     fontSize: 12,
     color: colors.textSecondary,

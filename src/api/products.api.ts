@@ -8,9 +8,13 @@ type ProductsResponse = {
   limit: number;
 };
 
-export async function getAllProducts(limit = 20): Promise<Product[]> {
+export async function getAllProducts(
+  limit = 20,
+  sortBy?: string,
+  order?: 'asc' | 'desc'
+): Promise<Product[]> {
   const { data } = await apiClient.get<ProductsResponse>('/products', {
-    params: { limit },
+    params: { limit, ...(sortBy ? { sortBy, order: order ?? 'asc' } : {}) },
   });
   return data.products;
 }
@@ -22,8 +26,14 @@ export async function getCategories(): Promise<string[]> {
   return data.map((c: any) => (typeof c === 'string' ? c : c.slug));
 }
 
-export async function getProductsByCategory(category: string): Promise<Product[]> {
-  const { data } = await apiClient.get<ProductsResponse>(`/products/category/${category}`);
+export async function getProductsByCategory(
+  category: string,
+  sortBy?: string,
+  order?: 'asc' | 'desc'
+): Promise<Product[]> {
+  const { data } = await apiClient.get<ProductsResponse>(`/products/category/${category}`, {
+    params: sortBy ? { sortBy, order: order ?? 'asc' } : {},
+  });
   return data.products;
 }
 
