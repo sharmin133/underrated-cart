@@ -104,9 +104,6 @@ export default function HomeScreen() {
         getAllProducts(20, sortBy, order),
         getCategories(),
       ]);
-      // Skip applying this result if a filter was applied while this
-      // request was still in flight — prevents it from overwriting
-      // the filtered list the user just asked for.
       if (!filterAppliedRef.current) {
         setProducts(productList);
       }
@@ -120,11 +117,8 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Run once on mount only — sort/category/search changes are handled by
-  // their own dedicated handlers below.
   useEffect(() => {
     loadInitial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -195,10 +189,6 @@ export default function HomeScreen() {
     setSortOption(option);
     setSortMenuVisible(false);
 
-    // Search results and applied-filter results are re-sorted client-side
-    // (see sortedProducts below) since they don't come from a plain
-    // category/list endpoint call. Category/All browsing re-fetches with
-    // the documented sortBy/order query params.
     if (searchQuery.trim() || appliedFilterLabel) return;
 
     setLoading(true);
@@ -216,8 +206,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Client-side fallback so sorting also visibly applies to search results
-  // and applied-filter results.
   const sortedProducts = React.useMemo(() => {
     if (!searchQuery.trim() && !appliedFilterLabel) return products;
     const list = [...products];
@@ -323,9 +311,6 @@ export default function HomeScreen() {
                 </>
               )}
 
-              {/* Title row — sectionTitle can shrink/ellipsize so long
-                  filter labels never push the count pill or sort button
-                  off-screen. */}
               <View style={styles.titleRow}>
                 <Text
                   style={[styles.sectionTitle, styles.titleRowLabel]}
@@ -560,9 +545,6 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
     paddingLeft: 10,
   },
-  // Title row — flex layout that keeps the right-side controls
-  // (count pill + sort button) always visible on-screen. The label
-  // shrinks and ellipsizes instead of pushing them out.
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

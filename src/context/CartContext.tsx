@@ -24,16 +24,9 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const { userId } = useAuth();
-  // Tracks the DummyJSON cart id once one exists, so later changes call
-  // PUT /carts/{cartId} instead of creating a new cart every time.
   const remoteCartId = useRef<number | null>(null);
 
-  // Session-check read: fetches the user's existing mock cart from
-  // DummyJSON on boot to satisfy "GET /carts/user/{userId}". DummyJSON's
-  // seeded cart data is unrelated to what the demo user actually adds
-  // here, so it's only fetched/logged for the read-path requirement and
-  // not merged into the local optimistic cart (which stays the real
-  // source of truth for the UI).
+  
   useEffect(() => {
     if (!userId) return;
     getUserCartRequest(userId).catch(() => {
@@ -59,9 +52,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToCart = (product: Product, quantity = 1, size?: string) => {
-    // Local state is the source of truth since DummyJSON's cart writes
-    // don't actually persist — update UI instantly, then fire the API
-    // call in the background purely for realism/demo purposes.
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       const next = existing
